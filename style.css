@@ -1,0 +1,156 @@
+/* Animated Background */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(-45deg, #815deb, #84d379, #4a87ea, #d84e4e);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    transition: background 0.5s ease;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Container styling for readability */
+.container {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-radius: 10px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+/* Card styling */
+.card {
+    background-color: rgba(255, 255, 255, 0.97);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    transition: all 0.3s ease;
+    border-bottom: none;
+}
+
+/* Exam option styling */
+.exam-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: rgba(248, 249, 250, 0.7);
+    border: 1px solid rgba(222, 226, 230, 0.8);
+}
+
+.exam-option:hover {
+    transform: scale(1.03);
+    background-color: rgba(233, 236, 239, 0.9);
+    border-color: rgba(173, 181, 189, 0.9);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Button styling */
+.btn {
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+.btn-success {
+    background-color: #198754;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+}
+
+/* Form element styling */
+.form-control, .form-select {
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(206, 212, 218, 0.7);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    background-color: white;
+}
+
+/* Preview container styling */
+.preview-container {
+    max-width: 300px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.preview-container:hover {
+    transform: scale(1.02);
+    background-color: white;
+}
+
+/* Results table styling */
+.compression-results {
+    margin-top: 20px;
+    transition: all 0.5s ease;
+}
+
+.table {
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.table:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+/* Image preview styling */
+#originalPreview, #processedPreview {
+    transition: all 0.3s ease;
+    border-radius: 5px;
+}
+
+#originalPreview:hover, #processedPreview:hover {
+    transform: scale(1.01);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .exam-option {
+        margin-bottom: 10px;
+    }
+}
