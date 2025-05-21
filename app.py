@@ -9,16 +9,13 @@ from collections import defaultdict
 app = Flask(__name__)
 CORS(app)
 
-# Exam presets
 EXAM_SPECS = {
-    'upsc': {'width': 200, 'height': 250, 'max_size': 50},
-    'ssc': {'width': 150, 'height': 180, 'max_size': 30},
-    'bank': {'width': 175, 'height': 220, 'max_size': 40},
-    'nptel': {'width': 100, 'height': 120, 'max_size': 20},
-    'gate': {'width': 180, 'height': 220, 'max_size': 40}
+    'upsc': {'width': 110, 'height': 140, 'max_size': 290},
+    'ssc': {'width': 100, 'height': 120, 'max_size': 45},
+    'bank': {'width': 200, 'height': 230, 'max_size': 45},
+    'nptel': {'width': 150, 'height': 200, 'max_size': 90},
+    'gate': {'width': 240, 'height': 320, 'max_size': 195}
 }
-
-# ----------- Huffman Compression -----------
 
 class HuffmanNode:
     def __init__(self, char, freq):
@@ -69,34 +66,6 @@ def huffman_compress(image_data):
         byte_array.append(int(encoded[i:i + 8], 2))
     return bytes(byte_array)
 
-# ----------- LZW Compression -----------
-
-def lzw_compress(image_data):
-    if isinstance(image_data, np.ndarray):
-        image_data = image_data.tobytes()
-    dict_size = 256
-    dictionary = {bytes([i]): i for i in range(dict_size)}
-    w = bytes()
-    result = []
-    for byte in image_data:
-        wc = w + bytes([byte])
-        if wc in dictionary:
-            w = wc
-        else:
-            result.append(dictionary[w])
-            dictionary[wc] = dict_size
-            dict_size += 1
-            w = bytes([byte])
-    if w:
-        result.append(dictionary[w])
-    # Pack result into bytes
-    compressed_bytes = bytearray()
-    for code in result:
-        compressed_bytes += code.to_bytes(2, 'big')  # 2-byte codes
-    return bytes(compressed_bytes)
-
-# ----------- Flask Route -----------
-
 @app.route('/process_image', methods=['POST'])
 def process_image():
     try:
@@ -105,7 +74,6 @@ def process_image():
 
         image_file = request.files['image']
         exam_type = request.form.get('exam_type')
-        algorithm = request.form.get('algorithm')
 
         # Handle custom dimensions
         if exam_type == 'custom':
@@ -126,30 +94,40 @@ def process_image():
         img = img.resize((spec['width'], spec['height']))
         if img.mode != 'RGB':
             img = img.convert('RGB')
-        img_array = np.array(img)
 
-        # Apply compression algorithm
-        if algorithm == 'huffman':
-            compressed_data = huffman_compress(img_array)
-        elif algorithm == 'lzw':
-            compressed_data = lzw_compress(img_array)
-        else:
-            return jsonify({'error': 'Invalid compression algorithm'}), 400
+        # Try to match the compressed size to max_size (in KB)
+        max_bytes = spec['max_size'] * 1024
+        min_quality = 10
+        max_quality = 95
+        best_quality = min_quality
+        best_data = None
 
-        # Use compression size to adjust JPEG quality dynamically
-        quality = 85
-        if len(compressed_data) < 15000:
-            quality = 70
-        elif len(compressed_data) < 10000:
-            quality = 50
+        # Binary search for best JPEG quality so that Huffman-compressed image is <= max_size
+        low, high = min_quality, max_quality
+        while low <= high:
+            quality = (low + high) // 2
+            output = io.BytesIO()
+            img.save(output, format='JPEG', quality=quality)
+            output.seek(0)
+            img_bytes = output.read()
+            huff_data = huffman_compress(np.frombuffer(img_bytes, dtype=np.uint8))
+            if len(huff_data) <= max_bytes:
+                best_quality = quality
+                best_data = img_bytes
+                low = quality + 1   # Try higher quality
+            else:
+                high = quality - 1  # Lower quality
 
-        # Save final image
-        output = io.BytesIO()
-        img.save(output, format='JPEG', quality=quality)
-        output.seek(0)
+        # If none found under max_size, fall back to lowest quality
+        if best_data is None:
+            output = io.BytesIO()
+            img.save(output, format='JPEG', quality=min_quality)
+            output.seek(0)
+            best_data = output.read()
 
+        # Return the JPEG image (not the Huffman-compressed data, as that's not an image)
         return send_file(
-            output,
+            io.BytesIO(best_data),
             mimetype='image/jpeg',
             as_attachment=False,
             download_name=f'exam_photo_{exam_type}.jpg'
@@ -157,8 +135,6 @@ def process_image():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-# ----------- Run App -----------
 
 if __name__ == '__main__':
     app.run(debug=True)
